@@ -15,7 +15,7 @@ class Simple_Block
 		$this->block_name = $args['block_name'];
 		$this->block_title = $args['block_title'];
 		$this->fields = $args['fields'];
-		$this->block_styles_path = array_key_exists('block_styles_path', $args) ? $args['block_styles_path'] : null;
+		//$this->block_styles_path = array_key_exists('block_styles_path', $args) ? $args['block_styles_path'] : null;
 		$this->block_prefixed_name = 'simpleblock/' . $this->block_name;
 		$this->render_callback = $args['render_callback'];
 	}
@@ -23,7 +23,7 @@ class Simple_Block
 	public function init()
 	{
 
-		$this->load_js_for_block();
+		$this->build_component_tree();
 		$this->register_simple_block();
 
 		add_action('enqueue_block_editor_assets', [$this, 'load_all']);
@@ -39,7 +39,7 @@ class Simple_Block
 			filemtime(WP_PLUGIN_DIR . '/simpleblocks/blocks/block-configs.js')
 		);
 
-		wp_add_inline_script('block-configs.js', 'let testData = ' . $this->block_editor_js);
+		wp_add_inline_script('block-configs.js', "blockAttrLibrary['{$this->block_prefixed_name}'] = " . $this->block_editor_js);
 
 		wp_register_script(
 			'simple_blocks_js_template',
@@ -49,10 +49,45 @@ class Simple_Block
 		);
 	}
 
-	public function load_js_for_block()
+	public function build_component_tree()
 	{
+		$base_tree = [
+			'state' => (object)[],
+			'component' => 'wp.element.Fragment',
+			'attributes' => null,
+			'children' => [
+				(object)[
+					'component' => 'wp.components.ServerSideRender',
+					'attributes' => [
+						'block' => $this->block_prefixed_name,
+						'attributes' => 'props.attributes'
+					]
+				],
+				(object)[
+					'component' => 'wp.editor.InspectorControls',
+					'attributes' => null,
+					'children' => []
+				]
+			]
+		];
 
-		$r = [
+		$component_map = [
+			'text' => 'wp.components.TextareaControl',
+			'image' => 'wp.editor.MediaUpload'
+		];
+
+		$injection_location = &$base_tree['children'][1]->children;
+
+		foreach( $this->fields as $label => $field_type ) {
+			array_push($injection_location, (object)[
+				'component' => $component_map[$field_type],
+				'attributes' => [
+					'label' => $label
+				]
+			]);
+		}
+
+		/*$r = [
 			'component' => 'wp.element.Fragment',
 			'attributes' => null,
 			'children' => [
@@ -90,9 +125,9 @@ class Simple_Block
 					]
 				]
 			]
-		];
+		]; */
 
-		$this->block_editor_js = json_encode($r);
+		$this->block_editor_js = json_encode($base_tree);
 	}
 
 	public function maybe_enqueue_block_stylesheet()
@@ -112,9 +147,9 @@ class Simple_Block
 	public function register_simple_block()
 	{
 		$attrs = [];
-		foreach($this->fields as $field) {
-			$attrs[$field['slug']] = [
-				'type' => $field['type']
+		foreach($this->fields as $slug => $field) {
+			$attrs['slug'] = [
+				'type' => $field
 			];
 		}
 

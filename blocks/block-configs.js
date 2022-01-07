@@ -1,3 +1,6 @@
+let blockAttrLibrary = {};
+let componentState = {};
+
 let BlockCompMap = {
     'wp.element.Fragment': wp.element.Fragment,
     'wp.editor.InspectorControls' : wp.editor.InspectorControls,
@@ -6,12 +9,25 @@ let BlockCompMap = {
     'wp.components.ServerSideRender' : wp.components.ServerSideRender
 };
 
+function buildState(config, blockName) {
+    if(config.component === 'wp.components.TextareaControl') {
+        //componentState[config.attributes.label] = {type: 'string'}
+        //blockAttrLibrary[blockName].state.push({[config.attributes.label] : {type: 'string'}});
+        blockAttrLibrary[blockName].state[config.attributes.label] = {type: 'string'};
+    }
+
+    if(config.hasOwnProperty('children')) {
+        config.children.map(child => buildState(child, blockName));
+    }
+
+};
+
 function renderer(config) {
     if(config.component === 'wp.editor.MediaUpload') {
         config.attributes.onSelect = imageSelectCb;
         config.attributes.render = gtbImageRender;
     }
-b
+
     return React.createElement(
         BlockCompMap[config.component],
         config.attributes,
