@@ -11,8 +11,6 @@ let BlockCompMap = {
 
 function buildState(config, blockName) {
     if(config.component === 'wp.components.TextareaControl') {
-        //componentState[config.attributes.label] = {type: 'string'}
-        //blockAttrLibrary[blockName].state.push({[config.attributes.label] : {type: 'string'}});
         blockAttrLibrary[blockName].state[config.attributes.label] = {type: 'string'};
     }
 
@@ -22,10 +20,24 @@ function buildState(config, blockName) {
 
 };
 
-function renderer(config) {
+function renderer(config, props) {
     if(config.component === 'wp.editor.MediaUpload') {
         config.attributes.onSelect = imageSelectCb;
         config.attributes.render = gtbImageRender;
+    }
+
+    if(config.component === 'wp.components.TextareaControl') {
+        //onchange and value attributes
+        let label = config.attributes.label;
+        config.attributes.onChange = function(value) {
+            props.setAttributes({[label] : value});
+        }
+
+        config.attributes.value = props.attributes[label];
+    }
+
+    if(config.component === 'wp.components.ServerSideRender') {
+        config.attributes.attributes = props.attributes;
     }
 
     return React.createElement(
@@ -35,7 +47,7 @@ function renderer(config) {
         config.children &&
         (typeof config.children === "string"
             ? config.children
-            : config.children.map(c => renderer(c)))
+            : config.children.map(c => renderer(c, props)))
     );
 
 }

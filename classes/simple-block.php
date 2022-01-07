@@ -60,7 +60,7 @@ class Simple_Block
 					'component' => 'wp.components.ServerSideRender',
 					'attributes' => [
 						'block' => $this->block_prefixed_name,
-						'attributes' => 'props.attributes'
+						'attributes' => null
 					]
 				],
 				(object)[
@@ -72,7 +72,7 @@ class Simple_Block
 		];
 
 		$component_map = [
-			'text' => 'wp.components.TextareaControl',
+			'string' => 'wp.components.TextareaControl',
 			'image' => 'wp.editor.MediaUpload'
 		];
 
@@ -148,10 +148,11 @@ class Simple_Block
 	{
 		$attrs = [];
 		foreach($this->fields as $slug => $field) {
-			$attrs['slug'] = [
+			$attrs[$slug] = [
 				'type' => $field
 			];
 		}
+
 
 		register_block_type($this->block_prefixed_name, array(
 			'editor_script' => 'simple_blocks_js_template',

@@ -5,7 +5,6 @@ Object.keys(blockAttrLibrary).forEach(key => {
 
 
 Object.keys(blockAttrLibrary).forEach(key => {
-    console.log(key);
     console.log(blockAttrLibrary[key].state);
 
     wp.blocks.registerBlockType(key, {
@@ -16,18 +15,11 @@ Object.keys(blockAttrLibrary).forEach(key => {
 
         category: 'common',
 
-        attributes: blockAttrLibrary[key].state
-            /*test1 : {
-                type: 'string'
-            },
-            test2 : {
-                type: 'string'
-            }*/
-        ,
+        attributes: blockAttrLibrary[key].state,
 
         edit: function(props) {
-            return renderer(blockAttrLibrary[key])
-        } ,
+            return renderer(blockAttrLibrary[key], props)
+        },
 
         save: () => null
     });
