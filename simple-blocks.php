@@ -6,13 +6,10 @@ Description: Easy GB Blocks
 */
 
 require WP_PLUGIN_DIR . '/simpleblocks/classes/simple-block.php';
+require WP_PLUGIN_DIR . '/simpleblocks/classes/simple-block-template-abstract.php';
 
 class Simple_Blocks
 {
-	public function __construct()
-	{
-
-	}
 
 	public static function load_blocks(): void
 	{
@@ -30,6 +27,11 @@ class Simple_Blocks
 			$block = new $block_class_name;
 
 			$block_attrs = $block->get_attributes();
+
+			if( !empty($block->missing_attributes()) ) {
+				error_log($block_file_name . ' is missing one or more attributes: ' . print_r($block->missing_attributes, true));
+				continue;
+			}
 
 			$simple_block_instance = new Simple_Block($block_attrs);
 			$simple_block_instance->init();
