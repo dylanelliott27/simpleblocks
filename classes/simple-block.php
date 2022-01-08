@@ -15,7 +15,6 @@ class Simple_Block
 		$this->block_name = $args['block_name'];
 		$this->block_title = $args['block_title'];
 		$this->fields = $args['fields'];
-		//$this->block_styles_path = array_key_exists('block_styles_path', $args) ? $args['block_styles_path'] : null;
 		$this->block_prefixed_name = 'simpleblock/' . $this->block_name;
 		$this->render_callback = $args['render_callback'];
 	}
@@ -33,19 +32,26 @@ class Simple_Block
 
 	public function load_all() {
 		wp_enqueue_script(
-			'block-configs.js',
-			plugin_dir_url( dirname(__FILE__) ) . '/blocks/block-configs.js',
+			'simpleblock-globals.js',
+			plugin_dir_url( dirname(__FILE__) ) . '/js/simpleblock-globals.js',
 			['wp-blocks', 'wp-i18n', 'wp-element', 'wp-components', 'wp-editor'],
-			filemtime(WP_PLUGIN_DIR . '/simpleblocks/blocks/block-configs.js')
+			filemtime(WP_PLUGIN_DIR . '/simpleblocks/js/simpleblock-globals.js')
 		);
 
-		wp_add_inline_script('block-configs.js', "blockAttrLibrary['{$this->block_prefixed_name}'] = " . $this->block_editor_js);
+		wp_add_inline_script('simpleblock-globals.js', "blockAttrLibrary['{$this->block_prefixed_name}'] = " . $this->block_editor_js);
+
+		wp_enqueue_script(
+			'simpleblock-tools.js',
+			plugin_dir_url( dirname(__FILE__) ) . '/js/simpleblock-tools.js',
+			['wp-blocks', 'wp-i18n', 'wp-element', 'wp-components', 'wp-editor'],
+			filemtime(WP_PLUGIN_DIR . '/simpleblocks/js/simpleblock-tools.js')
+		);
 
 		wp_register_script(
-			'simple_blocks_js_template',
-			plugin_dir_url( dirname(__FILE__) ) . '/blocks/block-script-template.js',
+			'simpleblock-bootstrap.js',
+			plugin_dir_url( dirname(__FILE__) ) . '/js/simpleblock-bootstrap.js',
 			[ 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-components', 'wp-editor' ],
-			filemtime(WP_PLUGIN_DIR . '/simpleblocks/blocks/block-script-template.js')
+			filemtime(WP_PLUGIN_DIR . '/simpleblocks/js/simpleblock-bootstrap.js')
 		);
 	}
 
@@ -87,46 +93,6 @@ class Simple_Block
 			]);
 		}
 
-		/*$r = [
-			'component' => 'wp.element.Fragment',
-			'attributes' => null,
-			'children' => [
-				(object)[
-					'component' => 'wp.components.ServerSideRender',
-					'attributes' => [
-						'block' => "simpleblock/better-block",
-						'attributes' => 'props.attributes'
-					]
-				],
-				(object)[
-					'component' => 'wp.editor.InspectorControls',
-					'attributes' => null,
-					'children' => [
-						(object)[
-							'component' => 'wp.components.TextareaControl',
-							'attributes' => [
-								'label' => 'test1',
-							]
-						],
-						(object)[
-							'component' => 'wp.components.TextareaControl',
-							'attributes' => [
-								'label' => 'test2',
-							]
-						],
-						(object)[
-							'component' => 'wp.editor.MediaUpload',
-							'attributes' => [
-								'onSelect' => null,
-								'type' => 'image',
-								'render' => null
-							]
-						]
-					]
-				]
-			]
-		]; */
-
 		$this->block_editor_js = json_encode($base_tree);
 	}
 
@@ -155,7 +121,7 @@ class Simple_Block
 
 
 		register_block_type($this->block_prefixed_name, array(
-			'editor_script' => 'simple_blocks_js_template',
+			'editor_script' => 'simpleblock-bootstrap.js',
 			'style' => null,
 			'render_callback' => $this->render_callback,
 			'attributes' => $attrs
